@@ -172,7 +172,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .closing-cta h2 { margin: 12px 0 0; color: var(--navy); font-family: Georgia, serif; font-size: clamp(32px, 4vw, 45px); font-weight: 400; letter-spacing: -.045em; line-height: 1.05; }
 .closing-cta h2 em { color: #977444; }
 .site-footer { color: white; background: var(--navy-deep); }
-.site-footer__top { display: grid; grid-template-columns: 1.2fr 1fr 1fr; align-items: center; gap: 24px; padding-block: 37px; }
+.site-footer__top { display: grid; grid-template-columns: 1.1fr 1.3fr .7fr; align-items: start; gap: 40px; padding-block: 48px; }
 .brand--footer .brand__mark { background: transparent; }
 .brand--footer .brand__name { color: white; }
 .brand--footer .brand__tagline { color: #a8b1bd; }
@@ -301,3 +301,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .support-welcome { padding: 28px 24px; margin: auto; text-align: center; color: #455365; }.support-welcome svg { margin: 0 auto 14px; color: #9c7c49; }.support-welcome h2 { font-size: 21px; color: #142238; margin-bottom: 10px; }.support-welcome p { font-size: 13px; line-height: 1.8; margin-bottom: 20px; }
 .support-inbox { display: grid; grid-template-columns: 290px minmax(0,1fr); min-height: 520px; height: min(690px,calc(100dvh - 210px)); border: 1px solid #e2e5e8; border-radius: 14px; overflow: hidden; background: #fff; }.support-inbox__list { overflow-y: auto; border-right: 1px solid #e2e5e8; padding: 14px; }.support-contact { position: relative; display: block; text-align: left; width: 100%; border: 1px solid #e7e8e9; border-radius: 10px; padding: 12px; margin-top: 10px; }.support-contact--active { border-color: #a78a5b; background: #faf7f0; }.support-contact strong { font-size: 13px; padding-right: 28px; display: block; overflow-wrap: anywhere; }.support-contact small { display: block; font-size: 10px; color: #7c8590; overflow-wrap: anywhere; }.support-contact p { font-size: 12px; color: #596777; margin: 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }.support-contact__count { position: absolute; top: 10px; right: 10px; background: #142238; border-radius: 20px; color: #fff; font-size: 10px; padding: 2px 6px; }.support-inbox__thread { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }.support-inbox__customer { padding: 14px 18px; border-bottom: 1px solid #e6e8ea; }.support-inbox__customer strong { font-size: 14px; display: block; }.support-inbox__customer span { color: #7c8590; font-size: 11px; overflow-wrap: anywhere; }
 @media (max-width: 760px) { .support-inbox { grid-template-columns: 1fr; height: auto; }.support-inbox__list { max-height: 250px; border-right: 0; border-bottom: 1px solid #e2e5e8; }.support-inbox__thread { height: 520px; }.support-widget { right: 16px; bottom: max(16px,env(safe-area-inset-bottom)); }.support-panel { width: calc(100vw - 32px); }.support-launcher { width: 56px; height: 56px; } }
+
+.footer-contact h2 { margin: 0 0 22px; font-family: Georgia, serif; font-size: 28px; color: #e0bf81; }
+.footer-contact address { display: grid; gap: 20px; font-style: normal; }
+.footer-contact__detail { display: flex; align-items: flex-start; gap: 13px; color: #cbd3df; font-size: 14px; line-height: 1.8; }
+.footer-contact__detail svg { flex-shrink: 0; margin-top: 4px; color: #d6ba83; }
+.footer-contact__detail strong { display: block; color: white; font-size: 12px; letter-spacing: .08em; }
+.footer-contact__detail:hover { color: white; }
+.footer-social { display: grid; gap: 10px; }
+.footer-social__title { margin: 5px 0 10px; color: #d6ba83; font-size: 11px; font-weight: 700; letter-spacing: .15em; }
+.footer-social a { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 16px; border: 1px solid #ffffff26; border-radius: 6px; font-size: 14px; transition: background .2s, border-color .2s; }
+.footer-social a:hover { background: #ffffff0d; border-color: #d6ba83; }
+.footer-social a:focus-visible, .footer-contact a:focus-visible { outline: 2px solid #d6ba83; outline-offset: 5px; }
+@media (max-width: 900px) { .site-footer__top { grid-template-columns: 1fr; gap: 30px; } .footer-social { max-width: 360px; width: 100%; } }

@@ -1,7 +1,7 @@
 import BrandLogo from "@/components/BrandLogo";
 import Link from "next/link";
 import {
-  ArrowRight, ArrowUpRight, BedDouble, Coffee, MapPin,
+  ArrowRight, ArrowUpRight, BedDouble, Coffee, MapPin, Phone,
   ShieldCheck, Sparkles, Waves, Wifi, Utensils, Users,
 } from "lucide-react";
 import Header from "@/components/Header";
@@ -24,7 +24,7 @@ export default async function Home() {
     .eq("is_active", true)
     .order("display_order");
   const hotelName = process.env.NEXT_PUBLIC_HOTEL_NAME || "23 Hotel & Residence";
-  const hotelAddress = process.env.NEXT_PUBLIC_HOTEL_ADDRESS || "Yangon, Myanmar";
+  const hotelAddress = "No. 25, Set Hmu Street 1, Myittarnyunt Ward, Tamwe Township, Yangon 11211, Myanmar";
 
   return (
     <>
@@ -121,7 +121,7 @@ export default async function Home() {
             <h2 className="section-title">Your next stop<br /><em>is right here.</em></h2>
             <p className="section-description">Plan your route before you arrive, and let the rest of the journey slow down.</p>
             <div className="location-address"><span className="location-address__icon"><MapPin size={18} /></span><div><span>FIND US</span><strong>{hotelAddress}</strong></div></div>
-            <a className="button button--navy" target="_blank" rel="noreferrer" href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(hotelAddress || "23 Hotel & Residence, Yangon, Myanmar")}`}>Get road directions <ArrowUpRight size={15} /></a>
+            <a className="button button--navy" target="_blank" rel="noreferrer" href="https://maps.app.goo.gl/928BrFZXzA1eq7fm7">Get road directions <ArrowUpRight size={15} /></a>
           </div>
           <div className="location-visual">
             {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? (
@@ -135,7 +135,28 @@ export default async function Home() {
 
         <section className="closing-cta"><div className="site-container closing-cta__inner"><div><p className="eyebrow eyebrow--light">YOUR TIME, WELL SPENT</p><h2>Good stays leave<br /><em>room to remember.</em></h2></div><Link href="/#rooms" className="button button--champagne">Find your room <ArrowUpRight size={16} /></Link></div></section>
       </main>
-      <footer className="site-footer"><div className="site-container site-footer__top"><Link href="/" className="brand brand--footer"><BrandLogo size={48}/><span className="brand__copy"><span className="brand__name">23 Hotel & Residence</span><span className="brand__tagline">A CONSIDERED CITY STAY</span></span></Link><p className="site-footer__note">Thoughtfully yours, from check-in to check-out.</p><nav className="site-footer__links" aria-label="Footer navigation"><Link href="/login">Guest sign in</Link><Link href="/my-bookings">My bookings</Link><Link href="/admin">Staff portal</Link></nav></div><div className="site-container site-footer__bottom"><span>© {new Date().getFullYear()} 23 Hotel & Residence. All rights reserved.</span><span>MADE FOR A BETTER STAY</span></div></footer>
+      <footer className="site-footer" id="contact">
+        <div className="site-container site-footer__top">
+          <div>
+            <Link href="/" className="brand brand--footer"><BrandLogo size={48}/><span className="brand__copy"><span className="brand__name">23 Hotel & Residence</span><span className="brand__tagline">A CONSIDERED CITY STAY</span></span></Link>
+            <p className="site-footer__note">Thoughtfully yours, from check-in to check-out.</p>
+          </div>
+          <div className="footer-contact">
+            <h2>Contact</h2>
+            <address>
+              <a className="footer-contact__detail" href="https://maps.app.goo.gl/928BrFZXzA1eq7fm7" target="_blank" rel="noopener noreferrer"><MapPin size={20} aria-hidden="true"/><span><strong>Address</strong>{hotelAddress}</span></a>
+              <a className="footer-contact__detail" href="tel:+9595008879"><Phone size={19} aria-hidden="true"/><span><strong>Phone</strong>095008879</span></a>
+            </address>
+          </div>
+          <nav className="footer-social" aria-label="Hotel social links">
+            <span className="footer-social__title">STAY CONNECTED</span>
+            <a href="https://www.facebook.com/23Hotel.Residence/" target="_blank" rel="noopener noreferrer">Facebook <ArrowUpRight size={16} aria-hidden="true"/></a>
+            <a href="https://www.tiktok.com/@23_hotel_residence" target="_blank" rel="noopener noreferrer">TikTok <ArrowUpRight size={16} aria-hidden="true"/></a>
+            <a href="https://maps.app.goo.gl/928BrFZXzA1eq7fm7" target="_blank" rel="noopener noreferrer">Get directions <ArrowUpRight size={16} aria-hidden="true"/></a>
+          </nav>
+        </div>
+        <div className="site-container site-footer__bottom"><span>© {new Date().getFullYear()} 23 Hotel & Residence. All rights reserved.</span><span>MADE FOR A BETTER STAY</span></div>
+      </footer>
     </>
   );
 }
