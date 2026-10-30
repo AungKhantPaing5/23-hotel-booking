@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/db/client";
 import type { AppUser } from "@/lib/db/session";
 
-export type StaffRole = "super_admin" | "manager" | "receptionist" | "order_staff" | "kitchen_staff" | "deals_staff" | "service_staff" | "accountant";
+export type StaffRole = "super_admin" | "manager" | "receptionist" | "order_staff" | "kitchen_staff" | "deals_staff" | "service_staff" | "accountant" | "support_staff";
 export type StaffProfile = { user_id: string; display_name: string; role: StaffRole; is_active: boolean; created_at?: string };
 
 export async function requireUser() {

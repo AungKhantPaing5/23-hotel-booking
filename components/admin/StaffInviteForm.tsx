@@ -2,6 +2,7 @@
 import { useState } from "react";
 
 const roles = [
+  { value: "support_staff", label: "Support staff", detail: "Customer support chat only; cannot manage rooms, reservations, payments or staff." },
   { value: "manager", label: "Manager", detail: "Rooms, reservations, catalogue and hotel operations; cannot manage staff accounts." },
   { value: "receptionist", label: "Receptionist", detail: "Reservations and guest requests only." },
   { value: "kitchen_staff", label: "Kitchen staff", detail: "Kitchen and dining orders; accepts an order to claim it." },

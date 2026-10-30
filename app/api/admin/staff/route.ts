@@ -9,7 +9,7 @@ const schema = z.object({
   email: z.email().transform(value => value.trim().toLowerCase()),
   name: z.string().trim().min(2).max(100),
   password: z.string().min(10).max(256),
-  role: z.enum(["manager", "receptionist", "kitchen_staff", "deals_staff", "service_staff", "accountant"]),
+  role: z.enum(["manager", "receptionist", "kitchen_staff", "deals_staff", "service_staff", "accountant", "support_staff"]),
 });
 
 export async function POST(request: Request) {

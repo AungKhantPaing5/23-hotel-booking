@@ -61,3 +61,10 @@ The old customer header always rendered a hardcoded Sign in link, even when the 
 - Customer Sign in now uses email/password without SMS. Registration and password setup/reset use phone OTP followed by a new password. Existing OTP-only accounts retain their IDs, profile and bookings when they set a password.
 - Migration 008 adds persistent failed-login tracking and a password session version. Password changes invalidate previous sessions; staff sign-in issues the current session version and still does not request a phone.
 - Embedded PostgreSQL tests exercise the actual OTP/password routes and token verification: old-account setup, new registration, password hashing, OTP reuse rejection, returning login with no phone and no new OTP, staff isolation, disabled accounts, failed-login limits, reset and old-session invalidation.
+
+## Customer support chat
+
+- Added a responsive round customer chat launcher, private conversation history, reply badges, and a staff inbox with search, unread markers, pagination and resolution status. Messages refresh through HTTP polling while the page is visible.
+- Support-only employees have the new support_staff role, can access the support inbox, and cannot access hotel inventory, reservations, payments or staff administration. Manager/Receptionist/Super Admin may also reply.
+- Migration 009 adds chat tables and the role. Server-side authorization prevents customer impersonation, cross-customer access and access by unrelated/inactive staff roles. Messages are plain text and React escapes them. Length limits, persistent sender rate limits and retry idempotency are enforced.
+- Embedded PostgreSQL/API tests cover migration reapplication, ownership isolation, role enforcement, sending/replying, read cursors, unread counts, resolution/reopening, history pagination, cursor validation, duplicate retries and rate limiting. A deployed multi-client browser/concurrency test is still recommended before live rollout. Native app chat is outside this web widget update.

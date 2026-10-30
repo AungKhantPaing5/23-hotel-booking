@@ -61,4 +61,14 @@ try {
   const unauthorizedInventory=await fetch(`http://127.0.0.1:${port}/api/admin/rooms`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
   assert.equal(unauthorizedInventory.status,401);
   console.log('PASS inventory endpoints validate dates and protect admin edits');
+  const publicPage=await fetch(`http://127.0.0.1:${port}/payment/return`);
+  assert.equal(publicPage.status,200);
+  assert.ok((await publicPage.text()).includes('aria-label="Open support chat"'),'Customer pages include a floating support button');
+  assert.ok(!guestPage.includes('aria-label="Open support chat"'),'Login pages do not display the chat widget');
+  for(const path of ['/api/support/chat','/api/admin/support']){
+    const response=await fetch(`http://127.0.0.1:${port}${path}`);
+    assert.equal(response.status,401);
+    assert.match(response.headers.get('cache-control') || '',/no-store/);
+  }
+  console.log('PASS support widget visibility and private chat API authentication');
 } finally { child.kill('SIGTERM'); }

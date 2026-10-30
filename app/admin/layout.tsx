@@ -7,6 +7,7 @@ import { requireStaff, type StaffRole } from "@/lib/auth";
 import { createClient } from "@/lib/db/client";
 
 const allLinks = {
+  support: { href: "/admin/support", label: "Support chat", icon: MessageSquare },
   overview: { href: "/admin", label: "Overview", icon: LayoutDashboard },
   bookings: { href: "/admin/bookings", label: "Reservations", icon: CalendarDays },
   rooms: { href: "/admin/rooms", label: "Rooms & rates", icon: BedDouble },
@@ -18,14 +19,15 @@ const allLinks = {
 };
 
 const visibleLinkKeys: Record<StaffRole, (keyof typeof allLinks)[]> = {
-  super_admin: ["overview", "bookings", "rooms", "orders", "catalogue", "payments", "requests", "staff"],
-  manager: ["overview", "bookings", "rooms", "orders", "catalogue", "payments", "requests"],
-  receptionist: ["overview", "bookings", "requests"],
+  super_admin: ["support", "overview", "bookings", "rooms", "orders", "catalogue", "payments", "requests", "staff"],
+  manager: ["support", "overview", "bookings", "rooms", "orders", "catalogue", "payments", "requests"],
+  receptionist: ["support", "overview", "bookings", "requests"],
   kitchen_staff: ["overview", "orders"],
   order_staff: ["overview", "orders"],
   deals_staff: ["overview", "orders"],
   service_staff: ["overview", "orders"],
   accountant: ["overview", "payments"],
+  support_staff: ["support"],
 };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -237,3 +237,19 @@ docker compose exec -T db psql -v ON_ERROR_STOP=1 -U hotel_app -d 23hotel < dock
 Use your configured database credentials if different. New empty Docker databases apply the matching init migration automatically. Keep existing database volumes. Historic assigned numbers are preserved. Conflicting historic assignments across room types intentionally stop migration; reconcile those conflicts before retrying. Existing unnumbered active reservations hold their entire type for overlapping dates until reception assigns a valid number at check-in or cancels/rejects them.
 
 Room numbers with active reservations cannot be removed. Removing an unused number hides it from new bookings while retaining historical references. Mobile source includes the same date-based number selection; rebuild the native app to use the updated API.
+
+## Customer support chat
+
+A round Support chat button appears at the bottom-right of customer pages on desktop and mobile browsers. Guests sign in before sending. Messages are stored in PostgreSQL and each customer can access only their own conversation. Reply badges appear on the closed button. Open chats refresh every five seconds; unread summaries refresh every fifteen seconds. This uses normal HTTP polling, not external messaging services or push notifications.
+
+Staff read/reply at **Admin → Support chat** (`/admin/support`). Super Admin, Manager, Receptionist and the new **Support staff** role have access. Other staff roles cannot read support conversations. Super Admin can create a support-only employee under **Staff & roles → Support staff**; that employee signs in at `/staff/login` using email/password and sees the support inbox.
+
+Conversations support unread markers, customer search (name/email/phone), older message history and Mark resolved/Reopen. New messages reopen resolved conversations. The inbox displays up to 100 matching conversations, with unread first. Individual messages are limited to 2,000 characters and each sender to 20 messages per minute. Failed sends retain the draft; retries with the same message ID do not duplicate messages.
+
+Apply migration 009 to an existing database before starting this version:
+
+```bash
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U hotel_app -d 23hotel < docker/postgres/migrations/009_support_chat.sql
+```
+
+Keep the database volume and include support tables in regular backups. Fresh database initialization applies the matching init script automatically. Native mobile app chat is not included in this update; the customer website widget works in mobile browsers.

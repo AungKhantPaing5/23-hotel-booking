@@ -4,6 +4,7 @@ import { StaffInviteForm } from "@/components/admin/StaffInviteForm";
 export const dynamic = "force-dynamic";
 
 const roleDescriptions: Record<string, string> = {
+  support_staff: "Customer support chat only; read and reply to customer conversations.",
   super_admin: "Full system access; can invite and manage staff.",
   manager: "Hotel operations, rooms, bookings, services, deals and kitchen catalogue; cannot manage staff accounts.",
   receptionist: "Reservations and guest requests.",

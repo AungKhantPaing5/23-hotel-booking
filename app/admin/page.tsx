@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { CalendarDays, Clock3, CreditCard, ArrowUpRight, ConciergeBell, ChefHat, Tags, CheckCircle2, type LucideIcon } from "lucide-react";
 import { requireStaff } from "@/lib/auth";
 import { money, dateLabel } from "@/lib/format";
@@ -11,6 +12,7 @@ function Stat({ label, value, icon: Icon }: { label: string; value: string | num
 
 export default async function AdminHome() {
   const { hotelDb, staff, user } = await requireStaff();
+  if (staff.role === "support_staff") redirect("/admin/support");
 
   // Work-role dashboard: never show hotel revenue, bookings or guest-wide
   // information to Kitchen/Deals staff. The server-side role guard scopes this list by category
