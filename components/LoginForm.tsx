@@ -49,7 +49,7 @@ export default function LoginForm({ staffOnly = false }: { staffOnly?: boolean }
       const body = await response.json() as AuthResponse;
       if (!response.ok) throw new Error(body.error || "Could not sign in.");
       const requested = params.get("next");
-      const destination = requested && /^\/admin(?:\/|$)/.test(requested) && !requested.startsWith("//") ? requested : "/admin";
+      const destination = requested && /^\/admin(?:\/|\?|$)/.test(requested) && !requested.startsWith("//") ? requested : "/admin";
       window.location.replace(destination);
     } catch (e) { setError(e instanceof Error ? e.message : "Could not sign in"); setBusy(false); }
   }

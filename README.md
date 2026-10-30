@@ -213,3 +213,5 @@ Get-Content .\docker\postgres\migrations\002_services_image_url.sql | docker com
 - Existing databases must apply both migrations 003 and 004 once. Fresh databases created from `docker/postgres/init/001_schema.sql` already have the room assignment column, but running migration 004 is safe.
 
 Customer login is `/login`. Staff login is separately available at `/staff/login`; the customer page has no staff tab or staff login link.
+
+Legacy URLs such as `/login?next=/admin` automatically redirect to `/staff/login` and require only staff email/password, without phone or OTP.

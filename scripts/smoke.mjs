@@ -28,8 +28,18 @@ try {
   assert.ok(guestPage.includes('EMAIL ADDRESS'));
   assert.ok(!guestPage.includes('Staff · Email'));
   assert.ok(!guestPage.includes('type="password"'), 'Customer page must not include staff login');
-  const oldAdminLink = await (await fetch(`http://127.0.0.1:${port}/login?next=/admin`)).text();
-  assert.ok(!oldAdminLink.includes('type="password"'), 'Query parameters cannot enable staff form on customer login');
+  for (const next of ['/admin', '/admin/bookings']) {
+    const url = `http://127.0.0.1:${port}/login?${new URLSearchParams({next})}`;
+    const original = await fetch(url, {redirect:'manual'});
+    assert.equal(original.status,307);
+    const destination = new URL(original.headers.get('location'), url);
+    assert.equal(destination.pathname,'/staff/login');
+    assert.equal(destination.searchParams.get('next'),next);
+    const oldAdminLink = await (await fetch(url)).text();
+    assert.ok(oldAdminLink.includes('type="password"'), 'Old admin links must open password login');
+    assert.ok(!oldAdminLink.includes('type="tel"'), 'Old admin links must never ask for a phone');
+  }
+  console.log('PASS old admin login links redirect to email/password login');
   assert.ok(!guestPage.includes('type="tel"'), 'Guest enters email before phone');
   const staffPage = await (await fetch(`http://127.0.0.1:${port}/staff/login?next=/admin`)).text();
   assert.ok(staffPage.includes('Sign in to staff portal'));
