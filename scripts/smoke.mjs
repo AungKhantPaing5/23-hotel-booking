@@ -17,6 +17,13 @@ try {
     assert.equal(response.status, 401, `${method} ${path} must reject anonymous access`);
     console.log(`PASS ${method} ${path}: 401`);
   }
+  const session = await fetch(`http://127.0.0.1:${port}/api/auth/me`);
+  assert.match(session.headers.get('cache-control') || '', /no-store/);
+  const logout = await fetch(`http://127.0.0.1:${port}/api/auth/logout`, {method:'POST'});
+  assert.equal(logout.status,200);
+  assert.match(logout.headers.get('set-cookie') || '', /23hotel_session=;/);
+  assert.match(logout.headers.get('set-cookie') || '', /Max-Age=0/i);
+  console.log('PASS session is not cached and logout clears its cookie');
   const guestPage = await (await fetch(`http://127.0.0.1:${port}/login`)).text();
   assert.ok(guestPage.includes('EMAIL ADDRESS'));
   assert.ok(!guestPage.includes('Staff · Email'));

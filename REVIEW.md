@@ -43,3 +43,7 @@
 - OTPs are bound to both email and phone. Existing email/phone mismatches, disabled accounts and all staff accounts are rejected by customer OTP routes. Existing phone-only accounts may safely attach a previously unused email after phone verification.
 - Migration 006 adds OTP email binding while preserving users, profiles and bookings.
 - Web unit tests and HTTP smoke tests cover input validation, identity binding, account takeover prevention and the initial guest/staff forms. A PostgreSQL-backed end-to-end login still needs staging verification. Mobile source is updated to send email alongside OTP requests; a native device build was not tested.
+
+## Signed-in header correction
+
+The old customer header always rendered a hardcoded Sign in link, even when the protected My bookings page had successfully loaded the current user's reservations. The header now reads the validated server session and displays the guest's name (or email), a My bookings link and Sign out. Desktop and mobile navigation use the same session state. Sign out clears the server cookie and reloads the login page. The session API is marked private/no-store.
