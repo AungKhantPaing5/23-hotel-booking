@@ -1,4 +1,5 @@
 "use client";
+import BrandLogo from "@/components/BrandLogo";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -31,7 +32,7 @@ export default function HeaderClient({ user }: { user: HeaderUser | null }) {
     <header className="site-header">
       <div className="site-header__inner site-container">
         <Link href="/" className="brand" aria-label="23 Hotel & Residence home" onClick={closeMenu}>
-          <span className="brand__mark">23</span>
+          <BrandLogo size={48}/>
           <span className="brand__copy">
             <span className="brand__name">23 Hotel & Residence</span>
             <span className="brand__tagline">A CONSIDERED CITY STAY</span>

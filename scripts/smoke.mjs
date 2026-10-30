@@ -61,6 +61,9 @@ try {
   const unauthorizedInventory=await fetch(`http://127.0.0.1:${port}/api/admin/rooms`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
   assert.equal(unauthorizedInventory.status,401);
   console.log('PASS inventory endpoints validate dates and protect admin edits');
+  const logo=await fetch(`http://127.0.0.1:${port}/brand/hotel-logo.jpg`);
+  assert.equal(logo.status,200);assert.match(logo.headers.get('content-type') || '',/image\/jpeg/);assert.ok((await logo.arrayBuffer()).byteLength>1000);
+  console.log('PASS supplied hotel logo is served');
   const publicPage=await fetch(`http://127.0.0.1:${port}/payment/return`);
   assert.equal(publicPage.status,200);
   assert.ok((await publicPage.text()).includes('aria-label="Open support chat"'),'Customer pages include a floating support button');

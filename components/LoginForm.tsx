@@ -1,4 +1,5 @@
 "use client";
+import BrandLogo from "@/components/BrandLogo";
 import Link from "next/link";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -41,8 +42,8 @@ export default function LoginForm({staffOnly=false}:{staffOnly?:boolean}) {
     }catch(failure){setError(failure instanceof Error?failure.message:"Could not sign in.");}finally{setBusy(false);}
   }
   return <main className="grid min-h-screen bg-white md:grid-cols-2">
-    <section className="relative hidden bg-[#142238] p-12 text-white md:flex md:flex-col md:justify-between"><Link href="/" className="serif text-2xl">23 Hotel & Residence</Link><div><p className="eyebrow mb-5">YOUR NEXT STAY STARTS HERE</p><h1 className="serif text-5xl leading-tight">A little more<br/>room to relax.</h1><p className="mt-5 max-w-sm text-sm leading-7 text-[#d0d7e0]">Sign in securely to manage reservations and hotel operations.</p></div><p className="text-xs text-[#a9b5c2]">A refined city stay.</p></section>
-    <section className="flex items-center justify-center p-6"><div className="w-full max-w-md"><Link href="/" className="serif mb-12 block text-xl md:hidden">23 Hotel & Residence</Link><p className="eyebrow mb-3">ACCOUNT ACCESS</p><h2 className="serif text-4xl">{passwordLogin?"Welcome back.":flow==="register"?"Create your account.":"Set or reset password."}</h2>
+    <section className="relative hidden bg-[#142238] p-12 text-white md:flex md:flex-col md:justify-between"><Link href="/" className="serif flex items-center gap-3 text-2xl"><BrandLogo size={56}/>23 Hotel & Residence</Link><div><p className="eyebrow mb-5">YOUR NEXT STAY STARTS HERE</p><h1 className="serif text-5xl leading-tight">A little more<br/>room to relax.</h1><p className="mt-5 max-w-sm text-sm leading-7 text-[#d0d7e0]">Sign in securely to manage reservations and hotel operations.</p></div><p className="text-xs text-[#a9b5c2]">A refined city stay.</p></section>
+    <section className="flex items-center justify-center p-6"><div className="w-full max-w-md"><Link href="/" className="serif mb-12 flex items-center gap-3 text-xl md:hidden"><BrandLogo size={44}/>23 Hotel & Residence</Link><p className="eyebrow mb-3">ACCOUNT ACCESS</p><h2 className="serif text-4xl">{passwordLogin?"Welcome back.":flow==="register"?"Create your account.":"Set or reset password."}</h2>
       <p className="mt-3 text-sm leading-6 text-[#6f7886]">{passwordLogin?"Sign in with your email and password.":"Verify your registered 09 phone number, then set a password for future sign-ins."}</p>
       {!staffOnly && <div className="mt-6 flex gap-3"><button type="button" disabled={busy} className={`btn ${flow==="login"?"btn-primary":"btn-outline"}`} onClick={()=>changeFlow("login")}>Sign in</button><button type="button" disabled={busy} className={`btn ${flow==="register"?"btn-primary":"btn-outline"}`} onClick={()=>changeFlow("register")}>Create account</button></div>}
       <form className="mt-5 grid gap-4" onSubmit={submit}>

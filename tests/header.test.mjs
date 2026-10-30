@@ -9,7 +9,7 @@ const require = createRequire(import.meta.url);
 const source = readFileSync(new URL('../components/HeaderClient.tsx', import.meta.url), 'utf8');
 const compiled = ts.transpileModule(source, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, esModuleInterop: true } }).outputText;
 const exports = {};
-const resolve = name => name === 'next/link' ? { __esModule: true, default: ({ children, ...props }) => React.createElement('a', props, children) } : require(name);
+const resolve = name => name === 'next/link' ? { __esModule: true, default: ({ children, ...props }) => React.createElement('a', props, children) } : name === '@/components/BrandLogo' ? { __esModule: true, default: () => React.createElement('img', {src:'/brand/hotel-logo.jpg',alt:'23 Hotel & Residence logo'}) } : require(name);
 new Function('require', 'exports', compiled)(resolve, exports);
 const Header = exports.default;
 test('anonymous header offers customer sign in', () => {

@@ -29,6 +29,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       p_actor_id: (await hotelDb.auth.getUser()).data.user?.id, p_room_number: roomNumber || null,
     });
     if (error) {
+      console.error("Booking transition failed", {bookingId:id,code:error.code,message:error.message});
+      if (error.code === "23P01") return NextResponse.json({error:"That room number has an overlapping reservation. Check the selected dates and room inventory."},{status:409});
       if (error.message.includes("ROOM_ALREADY_ASSIGNED") || error.code === "23505") return NextResponse.json({ error: "That room number is already assigned to another checked-in guest." }, { status: 409 });
       if (error.message.includes("ROOM_NUMBER_REQUIRED")) return NextResponse.json({ error: "Room number is required for check-in." }, { status: 400 });
       return NextResponse.json({ error: "Could not update booking. Refresh and retry." }, { status: 409 });

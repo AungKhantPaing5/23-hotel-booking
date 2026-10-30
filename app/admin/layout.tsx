@@ -1,3 +1,4 @@
+import BrandLogo from "@/components/BrandLogo";
 import Link from "next/link";
 import {
   LayoutDashboard, CalendarDays, ConciergeBell, CreditCard, Users,
@@ -38,7 +39,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="admin-shell md:flex">
       <aside className="admin-sidebar md:sticky md:top-0 md:h-screen">
         <Link href="/" className="admin-sidebar__brand">
-          <span className="admin-sidebar__brand-mark">23</span>
+          <BrandLogo size={48}/>
           <span><span className="admin-sidebar__brand-name">23 Hotel & Residence</span><span className="admin-sidebar__brand-label">MANAGEMENT WORKSPACE</span></span>
         </Link>
         <p className="admin-section-label">{staff.role === "kitchen_staff" || staff.role === "order_staff" ? "KITCHEN OPERATIONS" : staff.role === "deals_staff" ? "DEALS OPERATIONS" : staff.role === "service_staff" ? "HOTEL SERVICE OPERATIONS" : staff.role === "accountant" ? "FINANCE" : staff.role === "receptionist" ? "FRONT DESK" : "HOTEL OPERATIONS"}</p>

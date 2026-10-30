@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { AppText, Field, PrimaryButton, Screen } from '@/components/ui';
 import { colors, hotelName } from '@/lib/theme';
@@ -46,7 +46,7 @@ export default function LoginScreen() {
     if(error){Alert.alert('Could not sign in',error.message);return;}router.back();
   }
   return <Screen>
-    <View style={styles.logo}><AppText style={styles.logoNum}>23</AppText></View>
+    <Image source={require('../assets/hotel-logo.jpg')} style={styles.logo} resizeMode="contain" accessibilityLabel="23 Hotel & Residence logo"/>
     <AppText style={styles.eyebrow}>WELCOME TO</AppText>
     <AppText style={styles.title}>{hotelName}</AppText>
     <AppText style={styles.subtitle}>Returning guests sign in with email and password. Verify your phone only to create an account or set/reset a password.</AppText>
@@ -76,4 +76,4 @@ export default function LoginScreen() {
     <View style={styles.note}><AppText style={{ color: colors.muted, fontSize: 11, lineHeight: 18 }}>By continuing, you agree that the hotel may use your phone number to manage reservations and send essential booking updates. Configure consent and privacy terms before launch.</AppText></View>
   </Screen>;
 }
-const styles = StyleSheet.create({ logo: { width: 66, height: 66, backgroundColor: colors.forest, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginTop: 14, marginBottom: 24 }, logoNum: { color: colors.gold, fontSize: 35, fontWeight: '800' }, eyebrow: { color: colors.goldDark, fontWeight: '800', letterSpacing: 2, fontSize: 10 }, title: { color: colors.forest, fontWeight: '800', fontSize: 33, lineHeight: 39, marginTop: 8 }, subtitle: { color: colors.muted, fontSize: 13, lineHeight: 22, marginTop: 12 }, form: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.line, borderRadius: 18, padding: 18, marginTop: 27, gap: 4 }, note: { padding: 15, marginTop: 9 }, });
+const styles = StyleSheet.create({ logo: { width: 66, height: 66, backgroundColor: colors.white, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginTop: 14, marginBottom: 24 }, logoNum: { color: colors.gold, fontSize: 35, fontWeight: '800' }, eyebrow: { color: colors.goldDark, fontWeight: '800', letterSpacing: 2, fontSize: 10 }, title: { color: colors.forest, fontWeight: '800', fontSize: 33, lineHeight: 39, marginTop: 8 }, subtitle: { color: colors.muted, fontSize: 13, lineHeight: 22, marginTop: 12 }, form: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.line, borderRadius: 18, padding: 18, marginTop: 27, gap: 4 }, note: { padding: 15, marginTop: 9 }, });

@@ -1,3 +1,4 @@
+import BrandLogo from "@/components/BrandLogo";
 import Link from "next/link";
 import {
   ArrowRight, ArrowUpRight, BedDouble, Coffee, MapPin,
@@ -134,7 +135,7 @@ export default async function Home() {
 
         <section className="closing-cta"><div className="site-container closing-cta__inner"><div><p className="eyebrow eyebrow--light">YOUR TIME, WELL SPENT</p><h2>Good stays leave<br /><em>room to remember.</em></h2></div><Link href="/#rooms" className="button button--champagne">Find your room <ArrowUpRight size={16} /></Link></div></section>
       </main>
-      <footer className="site-footer"><div className="site-container site-footer__top"><Link href="/" className="brand brand--footer"><span className="brand__mark">23</span><span className="brand__copy"><span className="brand__name">23 Hotel & Residence</span><span className="brand__tagline">A CONSIDERED CITY STAY</span></span></Link><p className="site-footer__note">Thoughtfully yours, from check-in to check-out.</p><nav className="site-footer__links" aria-label="Footer navigation"><Link href="/login">Guest sign in</Link><Link href="/my-bookings">My bookings</Link><Link href="/admin">Staff portal</Link></nav></div><div className="site-container site-footer__bottom"><span>© {new Date().getFullYear()} 23 Hotel & Residence. All rights reserved.</span><span>MADE FOR A BETTER STAY</span></div></footer>
+      <footer className="site-footer"><div className="site-container site-footer__top"><Link href="/" className="brand brand--footer"><BrandLogo size={48}/><span className="brand__copy"><span className="brand__name">23 Hotel & Residence</span><span className="brand__tagline">A CONSIDERED CITY STAY</span></span></Link><p className="site-footer__note">Thoughtfully yours, from check-in to check-out.</p><nav className="site-footer__links" aria-label="Footer navigation"><Link href="/login">Guest sign in</Link><Link href="/my-bookings">My bookings</Link><Link href="/admin">Staff portal</Link></nav></div><div className="site-container site-footer__bottom"><span>© {new Date().getFullYear()} 23 Hotel & Residence. All rights reserved.</span><span>MADE FOR A BETTER STAY</span></div></footer>
     </>
   );
 }

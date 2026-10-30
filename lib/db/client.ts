@@ -414,7 +414,7 @@ async function transitionBookingStatus(userId: string, p: Record<string, unknown
     if (next === "checked_in" && !/^[A-Za-z0-9][A-Za-z0-9 -]{0,14}$/.test(roomNumber)) throw new Error("ROOM_NUMBER_REQUIRED");
     let updated;
     try {
-      updated = await client.query<Record<string, any>>("UPDATE bookings SET status=$3, assigned_room_number=CASE WHEN $3='checked_in' THEN $5 ELSE assigned_room_number END, reviewed_by=$4, reviewed_at=now() WHERE id=$1 AND status=$2 RETURNING id,booking_code,status,check_in,check_out,total_amount,currency,assigned_room_number", [bookingId, expected, next, userId, roomNumber || null]);
+      updated = await client.query<Record<string, any>>("UPDATE bookings SET status=$3::booking_status, assigned_room_number=CASE WHEN $3::booking_status='checked_in'::booking_status THEN $5 ELSE assigned_room_number END, reviewed_by=$4, reviewed_at=now() WHERE id=$1 AND status=$2 RETURNING id,booking_code,status,check_in,check_out,total_amount,currency,assigned_room_number", [bookingId, expected, next, userId, roomNumber || null]);
     } catch (error) { const e = error as { code?: string }; if (e.code === "23505") throw new Error("ROOM_ALREADY_ASSIGNED"); throw error; }
     if (!updated.rows[0]) throw new Error("STATUS_CONFLICT");
     await client.query("INSERT INTO audit_logs(actor_id,action,entity_type,entity_id,metadata) VALUES($1,'booking.status_changed','booking',$2,$3::jsonb)", [userId, bookingId, JSON.stringify({ from: expected, to: next })]);

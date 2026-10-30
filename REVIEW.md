@@ -68,3 +68,8 @@ The old customer header always rendered a hardcoded Sign in link, even when the 
 - Support-only employees have the new support_staff role, can access the support inbox, and cannot access hotel inventory, reservations, payments or staff administration. Manager/Receptionist/Super Admin may also reply.
 - Migration 009 adds chat tables and the role. Server-side authorization prevents customer impersonation, cross-customer access and access by unrelated/inactive staff roles. Messages are plain text and React escapes them. Length limits, persistent sender rate limits and retry idempotency are enforced.
 - Embedded PostgreSQL/API tests cover migration reapplication, ownership isolation, role enforcement, sending/replying, read cursors, unread counts, resolution/reopening, history pagination, cursor validation, duplicate retries and rate limiting. A deployed multi-client browser/concurrency test is still recommended before live rollout. Native app chat is outside this web widget update.
+
+## Hotel logo and booking confirmation correction
+
+- Replaced header/footer/login/admin text marks with the supplied hotel logo, added its browser icon and updated the mobile login image. The Docker runtime copies public assets so the logo is available after deployment.
+- Reproduced the confirmation failure with the actual transition service and PostgreSQL: parameter $3 was inferred as both text and booking_status (42P08). Explicit enum casts fix confirmation and check-in. Tests cover legacy unnumbered reservations, numbered reservations, check-in, selection preservation and stale status rejection. No new database migration is needed for this correction.
