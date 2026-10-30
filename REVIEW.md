@@ -55,3 +55,9 @@ The old customer header always rendered a hardcoded Sign in link, even when the 
 - Migration 007 preserves old assignments and old unnumbered active bookings. Unnumbered legacy reservations conservatively hold their entire room type for their stay dates. Resolve/assign them before selling those overlapping dates. A migration with conflicting historic room ownership fails for manual reconciliation.
 - Embedded PostgreSQL (PGlite) tests execute the actual schema/migration, availability SQL and booking service: different-number same-date bookings, duplicate-number rejection, overlapping stays, adjacent stays, cancellation/rebooking, wrong-type rejection, inventory removal protections, migration reapplication and history preservation. This does not replace a concurrency/load test on the deployed PostgreSQL 17 server.
 - Mobile source is updated; no native build/device test was performed.
+
+## Returning customer password login
+
+- Customer Sign in now uses email/password without SMS. Registration and password setup/reset use phone OTP followed by a new password. Existing OTP-only accounts retain their IDs, profile and bookings when they set a password.
+- Migration 008 adds persistent failed-login tracking and a password session version. Password changes invalidate previous sessions; staff sign-in issues the current session version and still does not request a phone.
+- Embedded PostgreSQL tests exercise the actual OTP/password routes and token verification: old-account setup, new registration, password hashing, OTP reuse rejection, returning login with no phone and no new OTP, staff isolation, disabled accounts, failed-login limits, reset and old-session invalidation.

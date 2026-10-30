@@ -112,15 +112,22 @@ export const hotelApi = {
     } catch (error) { return { data: null, error: { message: error instanceof Error ? error.message : 'Request failed.' } }; }
   },
   auth: {
+    signInWithPassword: async (email: string, password: string) => {
+      try {
+        const body=await api('/api/auth/customer-login',{method:'POST',body:JSON.stringify({email,password})});
+        if(body.token)await AsyncStorage.setItem(TOKEN_KEY,body.token);
+        return {error:null as ApiError|null};
+      }catch(error){return {error:{message:error instanceof Error?error.message:'Could not sign in.'} as ApiError};}
+    },
     signInWithOtp: async ({ email, phone, options }: { email: string; phone: string; options?: { data?: { full_name?: string } } }) => {
       try {
         const body = await api('/api/auth/otp/request', { method: 'POST', body: JSON.stringify({ email, phone, fullName: options?.data?.full_name || '' }) });
         return { data: { developmentCode: body.developmentCode }, error: null as ApiError | null };
       } catch (error) { return { data: { developmentCode: undefined }, error: { message: error instanceof Error ? error.message : 'Could not request code.' } as ApiError }; }
     },
-    verifyOtp: async ({ email, phone, token: code }: { email: string; phone: string; token: string; type?: string }) => {
+    verifyOtp: async ({ email, phone, token: code, password }: { email: string; phone: string; token: string; password: string; type?: string }) => {
       try {
-        const body = await api('/api/auth/otp/verify', { method: 'POST', body: JSON.stringify({ email, phone, code }) });
+        const body = await api('/api/auth/otp/verify', { method: 'POST', body: JSON.stringify({ email, phone, code, password }) });
         if (body.token) await AsyncStorage.setItem(TOKEN_KEY, body.token);
         return { data: { user: body.user }, error: null as ApiError | null };
       } catch (error) { return { data: { user: null }, error: { message: error instanceof Error ? error.message : 'Verification failed.' } as ApiError }; }

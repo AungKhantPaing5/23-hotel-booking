@@ -27,7 +27,8 @@ try {
   const guestPage = await (await fetch(`http://127.0.0.1:${port}/login`)).text();
   assert.ok(guestPage.includes('EMAIL ADDRESS'));
   assert.ok(!guestPage.includes('Staff · Email'));
-  assert.ok(!guestPage.includes('type="password"'), 'Customer page must not include staff login');
+  assert.ok(guestPage.includes('type="password"'), 'Returning customers sign in with password');
+  assert.ok(!guestPage.includes('Sign in to staff portal'), 'Customer page must not expose staff login');
   for (const next of ['/admin', '/admin/bookings']) {
     const url = `http://127.0.0.1:${port}/login?${new URLSearchParams({next})}`;
     const original = await fetch(url, {redirect:'manual'});
@@ -40,12 +41,12 @@ try {
     assert.ok(!oldAdminLink.includes('type="tel"'), 'Old admin links must never ask for a phone');
   }
   console.log('PASS old admin login links redirect to email/password login');
-  assert.ok(!guestPage.includes('type="tel"'), 'Guest enters email before phone');
+  assert.ok(!guestPage.includes('type="tel"'), 'Returning customers do not enter a phone number');
   const staffPage = await (await fetch(`http://127.0.0.1:${port}/staff/login?next=/admin`)).text();
   assert.ok(staffPage.includes('Sign in to staff portal'));
   assert.ok(staffPage.includes('type="password"'));
   assert.ok(!staffPage.includes('type="tel"'), 'Staff login must not request a phone');
-  console.log('PASS guest email-first and staff password-only forms');
+  console.log('PASS returning guest and staff email/password forms without phone');
   for (const path of ['/api/auth/otp/request', '/api/auth/otp/verify']) {
     for (const body of [{phone:'09123456789',code:'123456'}, {email:'guest@example.com',phone:'08123456789',code:'123456'}]) {
       const response = await fetch(`http://127.0.0.1:${port}${path}`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -53,6 +54,8 @@ try {
     }
   }
   console.log('PASS OTP input validation');
+  const invalidLogin=await fetch(`http://127.0.0.1:${port}/api/auth/customer-login`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  assert.equal(invalidLogin.status,400);
   const badAvailability=await fetch(`http://127.0.0.1:${port}/api/public/room-availability?roomId=bad&checkIn=wrong`);
   assert.equal(badAvailability.status,400);
   const unauthorizedInventory=await fetch(`http://127.0.0.1:${port}/api/admin/rooms`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});

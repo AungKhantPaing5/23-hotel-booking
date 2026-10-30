@@ -6,6 +6,9 @@ import { colors, hotelName } from '@/lib/theme';
 import { hotelApi } from '@/lib/api';
 
 export default function LoginScreen() {
+  const [password,setPassword]=useState('');
+  const [confirm,setConfirm]=useState('');
+  const [setup,setSetup]=useState(false);
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
@@ -30,20 +33,30 @@ export default function LoginScreen() {
 
   async function verifyCode() {
     if (!/^\d{6}$/.test(otp.trim())) { Alert.alert('Invalid code', 'Enter the SMS verification code.'); return; }
+    if(password.length<10 || password.length>256 || password!==confirm){Alert.alert('Check password','Use 10 to 256 characters and matching passwords.');return;}
     setBusy(true);
-    const { error } = await hotelApi.auth.verifyOtp({ email: email.trim().toLowerCase(), phone: phone.replace(/[\s()-]/g, ''), token: otp.trim(), type: 'sms' });
+    const { error } = await hotelApi.auth.verifyOtp({ email: email.trim().toLowerCase(), phone: phone.replace(/[\s()-]/g, ''), token: otp.trim(), password, type: 'sms' });
     setBusy(false);
     if (error) { Alert.alert('Verification failed', error.message); return; }
     router.back();
   }
 
+  async function passwordLogin(){
+    setBusy(true);const {error}=await hotelApi.auth.signInWithPassword(email.trim().toLowerCase(),password);setBusy(false);
+    if(error){Alert.alert('Could not sign in',error.message);return;}router.back();
+  }
   return <Screen>
     <View style={styles.logo}><AppText style={styles.logoNum}>23</AppText></View>
     <AppText style={styles.eyebrow}>WELCOME TO</AppText>
     <AppText style={styles.title}>{hotelName}</AppText>
-    <AppText style={styles.subtitle}>Enter your email, then verify your 09 phone number to request a stay, track reservations and order hotel services.</AppText>
+    <AppText style={styles.subtitle}>Returning guests sign in with email and password. Verify your phone only to create an account or set/reset a password.</AppText>
     <View style={styles.form}>
-      {stage === 'email' ? <>
+      {!setup ? <>
+        <Field label="EMAIL ADDRESS" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" autoCapitalize="none" />
+        <Field label="PASSWORD" value={password} onChangeText={setPassword} secureTextEntry />
+        <PrimaryButton title="Sign in" onPress={passwordLogin} loading={busy} />
+        <Pressable onPress={()=>{setSetup(true);setStage('email');setPassword('');setConfirm('');}} style={{padding:12}}><AppText>Create account / Set or reset password</AppText></Pressable>
+      </> : stage === 'email' ? <>
         <Field label="EMAIL ADDRESS" value={email} onChangeText={setEmail} placeholder="you@example.com" keyboardType="email-address" autoCapitalize="none" />
         <PrimaryButton title="Continue" onPress={() => { if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { Alert.alert('Invalid email', 'Enter a valid email address.'); return; } setStage('phone'); }} loading={busy} />
       </> : stage === 'phone' ? <>
@@ -53,9 +66,12 @@ export default function LoginScreen() {
       </> : <>
         <AppText style={{ color: colors.muted, lineHeight: 21, marginBottom: 8 }}>Enter the code sent to {phone}. Make sure the number is correct and reachable.</AppText>
         <Field label="SMS VERIFICATION CODE" value={otp} onChangeText={setOtp} placeholder="123456" keyboardType="number-pad" maxLength={8} autoComplete="sms-otp" />
-        <PrimaryButton title="Verify & continue" onPress={verifyCode} loading={busy} />
+        <Field label="NEW PASSWORD (10+ CHARACTERS)" value={password} onChangeText={setPassword} secureTextEntry maxLength={256} />
+        <Field label="CONFIRM PASSWORD" value={confirm} onChangeText={setConfirm} secureTextEntry maxLength={256} />
+        <PrimaryButton title="Verify & save password" onPress={verifyCode} loading={busy} />
         <Pressable onPress={() => { setStage('email'); setOtp(''); }} style={{ padding: 12, alignItems: 'center' }}><AppText style={{ fontWeight: '700', color: colors.goldDark }}>Change email or phone number</AppText></Pressable>
       </>}
+      {setup && <Pressable onPress={()=>{setSetup(false);setOtp('');setPassword('');}} style={{padding:12}}><AppText>Back to sign in</AppText></Pressable>}
     </View>
     <View style={styles.note}><AppText style={{ color: colors.muted, fontSize: 11, lineHeight: 18 }}>By continuing, you agree that the hotel may use your phone number to manage reservations and send essential booking updates. Configure consent and privacy terms before launch.</AppText></View>
   </Screen>;

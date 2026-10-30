@@ -23,20 +23,20 @@ function secret() {
 function sign(value: string) {
   return createHmac("sha256", secret()).update(value).digest("base64url");
 }
-export function createSessionToken(userId: string, maxAgeSeconds = Number(process.env.SESSION_MAX_AGE_SECONDS || 60 * 60 * 24 * 7)) {
-  const payload = Buffer.from(JSON.stringify({ sub: userId, exp: Math.floor(Date.now() / 1000) + maxAgeSeconds, v: 1 })).toString("base64url");
+export function createSessionToken(userId: string, maxAgeSeconds = Number(process.env.SESSION_MAX_AGE_SECONDS || 60 * 60 * 24 * 7), sessionVersion = 0) {
+  const payload = Buffer.from(JSON.stringify({ sub: userId, sv: sessionVersion, exp: Math.floor(Date.now() / 1000) + maxAgeSeconds, v: 1 })).toString("base64url");
   return `${payload}.${sign(payload)}`;
 }
-function verifyToken(token: string): { sub: string; exp: number; v: number } | null {
+function verifyToken(token: string): { sub: string; exp: number; v: number; sv?: number } | null {
   const [payload, signature] = token.split(".");
   if (!payload || !signature || token.split(".").length !== 2) return null;
   const expected = Buffer.from(sign(payload));
   const actual = Buffer.from(signature);
   if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) return null;
   try {
-    const decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { sub?: string; exp?: number; v?: number };
-    if (typeof decoded.sub !== "string" || !/^[a-f0-9-]{36}$/i.test(decoded.sub) || typeof decoded.exp !== "number" || !Number.isFinite(decoded.exp) || decoded.exp <= Math.floor(Date.now() / 1000) || decoded.v !== 1) return null;
-    return decoded as { sub: string; exp: number; v: number };
+    const decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { sub?: string; exp?: number; v?: number; sv?: number };
+    if (typeof decoded.sub !== "string" || !/^[a-f0-9-]{36}$/i.test(decoded.sub) || typeof decoded.exp !== "number" || !Number.isFinite(decoded.exp) || decoded.exp <= Math.floor(Date.now() / 1000) || decoded.v !== 1 || (decoded.sv !== undefined && (!Number.isInteger(decoded.sv) || decoded.sv < 0))) return null;
+    return decoded as { sub: string; exp: number; v: number; sv?: number };
   } catch {
     return null;
   }
@@ -67,21 +67,21 @@ export async function getCurrentUser(): Promise<AppUser | null> {
   if (!token) return null;
   const parsed = verifyToken(token);
   if (!parsed) return null;
-  const result = await query<{ id: string; email: string | null; phone: string | null; full_name: string; is_enabled: boolean }>(
-    "SELECT id, email, phone, full_name, is_enabled FROM users WHERE id = $1 LIMIT 1", [parsed.sub]
+  const result = await query<{ id: string; email: string | null; phone: string | null; full_name: string; is_enabled: boolean; session_version: number }>(
+    "SELECT id, email, phone, full_name, is_enabled, session_version FROM users WHERE id = $1 LIMIT 1", [parsed.sub]
   );
   const row = result.rows[0];
-  if (!row || !row.is_enabled) return null;
+  if (!row || !row.is_enabled || (parsed.sv ?? 0)!==row.session_version) return null;
   return { id: row.id, email: row.email, phone: row.phone, full_name: row.full_name, user_metadata: { full_name: row.full_name } };
 }
 
 export async function getCurrentUserByToken(token: string): Promise<AppUser | null> {
   const parsed = verifyToken(token);
   if (!parsed) return null;
-  const result = await query<{ id: string; email: string | null; phone: string | null; full_name: string; is_enabled: boolean }>(
-    "SELECT id, email, phone, full_name, is_enabled FROM users WHERE id = $1 LIMIT 1", [parsed.sub]
+  const result = await query<{ id: string; email: string | null; phone: string | null; full_name: string; is_enabled: boolean; session_version: number }>(
+    "SELECT id, email, phone, full_name, is_enabled, session_version FROM users WHERE id = $1 LIMIT 1", [parsed.sub]
   );
   const row = result.rows[0];
-  if (!row || !row.is_enabled) return null;
+  if (!row || !row.is_enabled || (parsed.sv ?? 0)!==row.session_version) return null;
   return { id: row.id, email: row.email, phone: row.phone, full_name: row.full_name, user_metadata: { full_name: row.full_name } };
 }
