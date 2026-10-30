@@ -35,3 +35,11 @@
 - Payment checkouts left pending must be reconciled with the provider before a new attempt; do not simply delete pending/paid records.
 - The supplied Expo source remains available under `mobile/`; its build and device behavior were not tested in this web booking review.
 - Back up PostgreSQL and the upload volume. No real customer data or payment credentials are included in the repository.
+
+## Customer login update
+
+- Email-first customer login followed by local 09 phone input and a six-digit SMS OTP. Email is an account identifier, not a verified inbox.
+- Staff/Admin email/password login does not ask for a phone number. Admin destinations default to the Staff tab.
+- OTPs are bound to both email and phone. Existing email/phone mismatches, disabled accounts and all staff accounts are rejected by customer OTP routes. Existing phone-only accounts may safely attach a previously unused email after phone verification.
+- Migration 006 adds OTP email binding while preserving users, profiles and bookings.
+- Web unit tests and HTTP smoke tests cover input validation, identity binding, account takeover prevention and the initial guest/staff forms. A PostgreSQL-backed end-to-end login still needs staging verification. Mobile source is updated to send email alongside OTP requests; a native device build was not tested.

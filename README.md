@@ -2,6 +2,22 @@
 
 Customer Website + Admin Dashboard + Android/iOS customer app. This edition does not require any hosted database account. The database is PostgreSQL running locally in Docker; the Next.js server talks to it through a private server-only connection. The browser and Expo app call the hotel's API and never connect directly to PostgreSQL.
 
+## Customer email and phone login
+
+Customers enter an email first, then an **11-digit Myanmar mobile number starting with 09**, then the SMS OTP. No customer password is required in this flow. The email identifies the account; the SMS code verifies control of the phone, not ownership of the email inbox. Returning customers must use their registered email and phone combination. A previous phone-only customer may add an unused email after phone verification without losing bookings.
+
+Staff/Admin keep email + password login with no phone prompt. `/login?next=/admin` selects the Staff tab automatically. Customer OTP never signs into staff accounts, including inactive staff.
+
+**Existing installations must apply migration 006 before restarting:**
+
+```bash
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U hotel_app -d 23hotel < docker/postgres/migrations/006_customer_email_otp.sql
+```
+
+Use your configured database username/name if different. Production Compose users should add `-f compose.production.yml` after `docker compose`. Existing sessions and bookings are preserved; pending old OTP codes must be requested again. Fresh installations include the new column automatically.
+
+In local development the OTP remains `123456`. Production requires a working SMS provider and a random `OTP_SECRET` of at least 32 characters. The app converts local `09` input to the existing international database/SMS representation internally.
+
 ## Reviewed booking release
 
 See [REVIEW.md](REVIEW.md) for fixes, verification and remaining deployment requirements.
@@ -94,7 +110,7 @@ Do not run `down -v` if you have bookings or customer information you need to ke
 
 ## Customer login and OTP
 
-In local development (`npm run dev`), request an OTP and use `123456`. It is intentionally a predictable development-only code; the server refuses to use the development code when `NODE_ENV=production`. In production, set `AUTH_OTP_MODE=production`, configure `SMS_API_URL`, `SMS_API_KEY` and `SMS_SENDER_ID` to match your chosen SMS vendor's actual API, and test delivery/rate limits. Do not deploy with local OTP enabled.
+In local development (`npm run dev`), enter your email, then an 11-digit `09` phone number, request an OTP and use `123456`. It is intentionally a predictable development-only code; the server refuses to use the development code when `NODE_ENV=production`. In production, set `AUTH_OTP_MODE=production`, configure `SMS_API_URL`, `SMS_API_KEY` and `SMS_SENDER_ID` to match your chosen SMS vendor's actual API, and test delivery/rate limits. Do not deploy with local OTP enabled.
 
 ## Add rooms and manage deals/kitchen
 

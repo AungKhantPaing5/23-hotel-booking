@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS staff_profiles (
 );
 CREATE TABLE IF NOT EXISTS auth_otps (
   id bigserial PRIMARY KEY,
+  email text NOT NULL DEFAULT '',
   phone text NOT NULL,
   code_hash text NOT NULL,
   full_name text NOT NULL DEFAULT '',

@@ -17,4 +17,19 @@ try {
     assert.equal(response.status, 401, `${method} ${path} must reject anonymous access`);
     console.log(`PASS ${method} ${path}: 401`);
   }
+  const guestPage = await (await fetch(`http://127.0.0.1:${port}/login`)).text();
+  assert.ok(guestPage.includes('EMAIL ADDRESS'));
+  assert.ok(!guestPage.includes('type="tel"'), 'Guest enters email before phone');
+  const staffPage = await (await fetch(`http://127.0.0.1:${port}/login?next=/admin`)).text();
+  assert.ok(staffPage.includes('Sign in to staff portal'));
+  assert.ok(staffPage.includes('type="password"'));
+  assert.ok(!staffPage.includes('type="tel"'), 'Staff login must not request a phone');
+  console.log('PASS guest email-first and staff password-only forms');
+  for (const path of ['/api/auth/otp/request', '/api/auth/otp/verify']) {
+    for (const body of [{phone:'09123456789',code:'123456'}, {email:'guest@example.com',phone:'08123456789',code:'123456'}]) {
+      const response = await fetch(`http://127.0.0.1:${port}${path}`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      assert.equal(response.status,400,'Missing email or invalid Myanmar phone must fail before database access');
+    }
+  }
+  console.log('PASS OTP input validation');
 } finally { child.kill('SIGTERM'); }

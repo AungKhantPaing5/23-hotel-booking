@@ -25,7 +25,7 @@ const COLUMNS: Record<string, Set<string>> = {
   customer_requests: new Set(["id", "customer_id", "booking_id", "subject", "message", "status", "assigned_to", "created_at", "updated_at"]),
   notification_logs: new Set(["id", "user_id", "booking_id", "channel", "template_key", "recipient", "status", "provider_message_id", "error_message", "created_at"]),
   audit_logs: new Set(["id", "actor_id", "action", "entity_type", "entity_id", "metadata", "created_at"]),
-  auth_otps: new Set(["id", "phone", "code_hash", "full_name", "expires_at", "attempts", "used_at", "created_at"]),
+  auth_otps: new Set(["id", "email", "phone", "code_hash", "full_name", "expires_at", "attempts", "used_at", "created_at"]),
 };
 const RELATIONS: Record<string, Record<string, RelationSpec>> = {
   bookings: { rooms: { table: "rooms", foreignKey: "room_id", targetKey: "id" }, profiles: { table: "profiles", foreignKey: "customer_id", targetKey: "user_id" } },
