@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: 23hotel-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-23hotel}
+      POSTGRES_USER: ${POSTGRES_USER:-hotel_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hotel_local_dev_password_change_me}
+      TZ: Asia/Yangon
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - 23hotel_pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hotel_app} -d ${POSTGRES_DB:-23hotel}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - 23hotel-local
+
+volumes:
+  23hotel_pgdata:
+    name: 23hotel_pgdata
+networks:
+  23hotel-local:
+    name: 23hotel-local

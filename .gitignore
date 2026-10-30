@@ -1,0 +1,22 @@
+node_modules
+.next
+out
+.env
+.env.local
+.env.*.local
+*.log
+
+# Hotel room photo uploads are local persistent data
+/storage/rooms/*
+!/storage/rooms/.gitkeep
+
+# Hotel kitchen/deal images
+/storage/services/*
+!/storage/services/.gitkeep
+
+*.tsbuildinfo
+.env.*
+!.env.example
+*.pem
+*.key
+backups/

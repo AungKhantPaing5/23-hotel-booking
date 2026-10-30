@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "23 Hotel & Residence",
+    "slug": "23-hotel-residence",
+    "version": "1.0.0",
+    "scheme": "23hotel",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tricoreit.hotel23"
+    },
+    "android": {
+      "package": "com.tricoreit.hotel23",
+      "adaptiveIcon": {
+        "backgroundColor": "#142238"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

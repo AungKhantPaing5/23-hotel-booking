@@ -1,0 +1,16 @@
+node_modules
+.next
+.expo
+mobile/node_modules
+mobile/.expo
+.env
+.env.local
+mobile/.env
+.git
+*.zip
+
+.env.*
+!.env.example
+*.tsbuildinfo
+storage/rooms/*
+storage/services/*
