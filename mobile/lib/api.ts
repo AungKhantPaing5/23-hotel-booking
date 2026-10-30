@@ -94,6 +94,10 @@ class ApiQuery implements PromiseLike<ApiResult> {
 
 export const hotelApi = {
   from(table: string) { return new ApiQuery(table); },
+  roomAvailability: async (roomId: string, checkIn: string, checkOut: string): Promise<string[]> => {
+    const result = await api(`/api/public/room-availability?${new URLSearchParams({roomId,checkIn,checkOut})}`);
+    return result.roomNumbers || [];
+  },
   createDepositCheckout: async (bookingId: string): Promise<ApiResult> => {
     try { return { data: await api('/api/payments/checkout', { method: 'POST', body: JSON.stringify({ bookingId }) }), error: null }; }
     catch (error) { return { data: null, error: { message: error instanceof Error ? error.message : 'Could not start deposit payment.' } }; }
@@ -101,7 +105,7 @@ export const hotelApi = {
   rpc: async (name: string, params: Record<string, unknown>): Promise<ApiResult> => {
     try {
       if (name === 'create_booking_request') {
-        const body = await api('/api/bookings', { method: 'POST', body: JSON.stringify({ roomId: params.p_room_id, checkIn: params.p_check_in, checkOut: params.p_check_out, guests: params.p_guests, note: params.p_note }) });
+        const body = await api('/api/bookings', { method: 'POST', body: JSON.stringify({ roomId: params.p_room_id, roomNumber: params.p_room_number, checkIn: params.p_check_in, checkOut: params.p_check_out, guests: params.p_guests, note: params.p_note }) });
         return { data: body.booking || body, error: null };
       }
       throw new Error(`Mobile action ${name} is unsupported.`);

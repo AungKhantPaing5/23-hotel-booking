@@ -3,6 +3,7 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BedDouble, Check, Edit3, Eye, EyeOff, Image as ImageIcon, LoaderCircle, Plus, Upload, X } from "lucide-react";
+import { splitRoomNumbers } from "@/lib/room-inventory";
 import { money } from "@/lib/format";
 
 type Room = {
@@ -13,6 +14,7 @@ type Room = {
   nightly_rate: number | string;
   capacity: number;
   features: string[] | null;
+  room_numbers: string[];
   image_url: string | null;
   is_active: boolean;
   display_order: number;
@@ -26,6 +28,7 @@ type FormValues = {
   nightly_rate: string;
   capacity: string;
   features: string;
+  room_numbers: string;
   image_url: string;
   display_order: string;
   is_active: boolean;
@@ -33,7 +36,7 @@ type FormValues = {
 
 const blankForm: FormValues = {
   name: "", slug: "", description: "", nightly_rate: "85000", capacity: "2",
-  features: "King bed, Air conditioning, Wi-Fi, Private bathroom", image_url: "", display_order: "0", is_active: true,
+  room_numbers: "", features: "King bed, Air conditioning, Wi-Fi, Private bathroom", image_url: "", display_order: "0", is_active: true,
 };
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -90,6 +93,7 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
       description: room.description || "",
       nightly_rate: String(room.nightly_rate),
       capacity: String(room.capacity),
+      room_numbers: (room.room_numbers || []).join(", "),
       features: (room.features || []).join(", "),
       image_url: room.image_url || "",
       display_order: String(room.display_order ?? 0),
@@ -149,6 +153,7 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
         description: form.description.trim(),
         nightly_rate: Number(form.nightly_rate),
         capacity: Number(form.capacity),
+        room_numbers: splitRoomNumbers(form.room_numbers),
         features: form.features.split(",").map((value) => value.trim()).filter(Boolean),
         image_url: savedImagePath,
         display_order: Number(form.display_order || 0),
@@ -202,7 +207,7 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="eyebrow">ROOM INVENTORY</p>
-          <h2 className="serif mt-2 text-2xl">{editingId ? "Edit room details" : "Add a room"}</h2>
+          <h2 className="serif mt-2 text-2xl">{editingId ? "Edit room type" : "Add a room type"}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6f7886]">Rooms marked active are published to the customer website and mobile app automatically. Upload a room photo directly from your computer; JPG, PNG and WebP files up to 5 MB are supported.</p>
         </div>
         {editingId && <button type="button" onClick={resetForm} className="btn btn-outline"><X size={14}/> Cancel edit</button>}
@@ -225,6 +230,10 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
           </label>
           <label className="field">MAXIMUM GUESTS *
             <input className="control" type="number" min="1" max="20" step="1" value={form.capacity} onChange={(e) => setForm((old) => ({ ...old, capacity: e.target.value }))} required />
+          </label>
+          <label className="field md:col-span-2">ROOM NUMBERS *
+            <textarea className="control" required value={form.room_numbers} onChange={e=>setForm(old=>({...old,room_numbers:e.target.value}))} placeholder="A100, A101, A103" rows={2} />
+            <span className="text-xs font-normal tracking-normal text-[#858c96]">Separate numbers with commas or new lines. Customers choose an available number when booking. Each number belongs to one room type.</span>
           </label>
           <label className="field md:col-span-2">DESCRIPTION
             <textarea className="control min-h-24 resize-y" value={form.description} onChange={(e) => setForm((old) => ({ ...old, description: e.target.value }))} maxLength={2000} placeholder="Describe the room, bedding, view and amenities." />
@@ -268,7 +277,7 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
 
     <section className="panel overflow-hidden">
       <div className="flex flex-wrap items-end justify-between gap-3 p-5 md:p-6">
-        <div><p className="eyebrow">ROOMS & RESIDENCES</p><h2 className="serif mt-2 text-2xl">All rooms <span className="font-sans text-sm text-[#818895]">({rooms.length})</span></h2></div>
+        <div><p className="eyebrow">ROOMS & RESIDENCES</p><h2 className="serif mt-2 text-2xl">All room types <span className="font-sans text-sm text-[#818895]">({rooms.length})</span></h2></div>
         <div className="flex gap-2 text-xs"><span className="rounded-full bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-700">{rooms.filter((room) => room.is_active).length} published</span><span className="rounded-full bg-[#f2f0eb] px-3 py-1.5 font-semibold text-[#687180]">{rooms.filter((room) => !room.is_active).length} hidden</span></div>
       </div>
       {rooms.length ? <div className="divide-y divide-[#eeeae1]">
@@ -279,6 +288,7 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold text-[#172234]">{room.name}</h3><span className={`status ${room.is_active ? "confirmed" : "cancelled"}`}>{room.is_active ? "Published" : "Hidden"}</span></div>
             <p className="mt-1 text-xs text-[#7d8490]">/rooms/{room.slug} · up to {room.capacity} guests · order {room.display_order}</p>
+            <p className="mt-2 text-xs font-semibold text-[#977444]">Room numbers: {(room.room_numbers || []).join(", ") || "Not configured — edit to add room numbers"}</p>
             <p className="mt-2 line-clamp-2 text-sm text-[#6f7886]">{room.description || "No description added."}</p>
             <p className="mt-2 text-sm font-semibold text-[#977444]">{money(Number(room.nightly_rate))}<span className="font-normal text-[#838a94]"> / night</span></p>
           </div>

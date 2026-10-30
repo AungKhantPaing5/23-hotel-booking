@@ -1,3 +1,4 @@
+import { roomNumberSchema } from "@/lib/room-inventory";
 import { cookies } from "next/headers";
 import { query, withTransaction } from "@/lib/db/pool";
 import { getCurrentUser, type AppUser } from "@/lib/db/session";
@@ -163,6 +164,10 @@ class QueryBuilder implements PromiseLike<DbResult<any>> {
         const params: unknown[] = []; const where = this.whereSql(params);
         const result = await query<Record<string, any>>(`DELETE FROM public."${this.table}"${where} RETURNING *`, params);
         rows = result.rows;
+      }
+      if (this.table === "rooms" && rows.length) {
+        const units = await query<{room_id:string;room_number:string}>("SELECT room_id,room_number FROM room_units WHERE room_id=ANY($1::uuid[]) AND is_active ORDER BY room_number",[rows.map(row=>row.id)]);
+        for (const row of rows) row.room_numbers=units.rows.filter(unit=>unit.room_id===row.id).map(unit=>unit.room_number);
       }
       rows = await attachRelations(this.table, rows, projection.relations);
       const output = rows.map(row => project(row, projection.columns, projection.all, projection.relations));
@@ -377,16 +382,19 @@ export function createAdminClient() { return new LocalClient(null, null, true); 
 
 async function createBookingRequest(userId: string, p: Record<string, unknown>) {
   const roomId = String(p.p_room_id || ""); const checkIn = String(p.p_check_in || ""); const checkOut = String(p.p_check_out || "");
+  const roomNumber = roomNumberSchema.parse(p.p_room_number);
   const guests = Number(p.p_guests); const note = String(p.p_note || "").slice(0, 2000);
   return withTransaction(async client => {
     if (!roomId || !checkIn || !checkOut || !Number.isInteger(guests) || guests < 1 || guests > 20) throw new Error("INVALID_BOOKING_DETAILS");
-    const room = await client.query<{ id: string; nightly_rate: string; capacity: number }>("SELECT id, nightly_rate, capacity FROM rooms WHERE id=$1 AND is_active=true FOR SHARE", [roomId]);
+    const room = await client.query<{ id: string; nightly_rate: string; capacity: number }>("SELECT id, nightly_rate, capacity FROM rooms WHERE id=$1 AND is_active=true FOR UPDATE", [roomId]);
     if (!room.rows[0]) throw new Error("ROOM_NOT_FOUND");
+    const unit = await client.query("SELECT room_number FROM room_units WHERE room_id=$1 AND room_number=$2 AND is_active=true",[roomId,roomNumber]);
+    if (!unit.rowCount) throw new Error("ROOM_NUMBER_NOT_AVAILABLE");
     if (guests > room.rows[0].capacity) throw new Error("GUEST_LIMIT_EXCEEDED");
     const dates = await client.query<{ nights: number; invalid: boolean }>("SELECT ($2::date - $1::date)::int AS nights, ($1::date < (now() AT TIME ZONE 'Asia/Yangon')::date OR $2::date <= $1::date) AS invalid", [checkIn, checkOut]);
     if (dates.rows[0]?.invalid || !dates.rows[0]?.nights) throw new Error("INVALID_BOOKING_DETAILS");
     const total = Number(room.rows[0].nightly_rate) * Number(dates.rows[0].nights);
-    const inserted = await client.query<{ id: string; booking_code: string; status: string; total_amount: string }>("INSERT INTO bookings(customer_id,room_id,check_in,check_out,guests,total_amount,currency,customer_note) VALUES($1,$2,$3,$4,$5,$6,'MMK',$7) RETURNING id,booking_code,status,total_amount", [userId, roomId, checkIn, checkOut, guests, total, note]);
+    const inserted = await client.query<{ id: string; booking_code: string; status: string; total_amount: string }>("INSERT INTO bookings(customer_id,room_id,check_in,check_out,guests,total_amount,currency,customer_note,assigned_room_number) VALUES($1,$2,$3,$4,$5,$6,'MMK',$7,$8) RETURNING id,booking_code,status,total_amount,assigned_room_number", [userId, roomId, checkIn, checkOut, guests, total, note,roomNumber]);
     await client.query("INSERT INTO audit_logs(actor_id,action,entity_type,entity_id,metadata) VALUES($1,'booking.created','booking',$2,$3::jsonb)", [userId, inserted.rows[0].id, JSON.stringify({ booking_code: inserted.rows[0].booking_code })]);
     return inserted.rows[0];
   }).catch(error => { const e = error as { code?: string }; if (e.code === "23P01") throw new Error("SOLD_OUT"); throw error; });
@@ -397,7 +405,10 @@ async function transitionBookingStatus(userId: string, p: Record<string, unknown
     const staff = await client.query<{ role: string }>("SELECT role FROM staff_profiles WHERE user_id=$1 AND is_active=true", [userId]);
     if (!staff.rows[0] || !["super_admin", "manager", "receptionist"].includes(staff.rows[0].role)) throw new Error("NOT_AUTHORIZED");
     const bookingId = String(p.p_booking_id || ""); const expected = String(p.p_expected_status || ""); const next = String(p.p_new_status || "");
-    const roomNumber = String(p.p_room_number || "").trim();
+    const current = await client.query<{assigned_room_number:string|null}>("SELECT assigned_room_number FROM bookings WHERE id=$1",[bookingId]);
+    const selected = current.rows[0]?.assigned_room_number;
+    const roomNumber = String(p.p_room_number || selected || "").trim().toUpperCase();
+    if (selected && roomNumber!==selected) throw new Error("ROOM_SELECTION_LOCKED");
     const transitions: Record<string, string[]> = { pending: ["confirmed", "rejected"], confirmed: ["cancelled", "checked_in"], checked_in: ["checked_out"] };
     if (!transitions[expected]?.includes(next)) throw new Error("INVALID_TRANSITION");
     if (next === "checked_in" && !/^[A-Za-z0-9][A-Za-z0-9 -]{0,14}$/.test(roomNumber)) throw new Error("ROOM_NUMBER_REQUIRED");

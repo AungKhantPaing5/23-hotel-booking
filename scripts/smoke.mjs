@@ -53,4 +53,9 @@ try {
     }
   }
   console.log('PASS OTP input validation');
+  const badAvailability=await fetch(`http://127.0.0.1:${port}/api/public/room-availability?roomId=bad&checkIn=wrong`);
+  assert.equal(badAvailability.status,400);
+  const unauthorizedInventory=await fetch(`http://127.0.0.1:${port}/api/admin/rooms`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  assert.equal(unauthorizedInventory.status,401);
+  console.log('PASS inventory endpoints validate dates and protect admin edits');
 } finally { child.kill('SIGTERM'); }

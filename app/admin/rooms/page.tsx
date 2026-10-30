@@ -7,7 +7,7 @@ export default async function AdminRoomsPage() {
   const { hotelDb } = await requireStaff(["super_admin", "manager"]);
   const { data, error } = await hotelDb
     .from("rooms")
-    .select("id,name,slug,description,nightly_rate,capacity,features,image_url,is_active,display_order,created_at")
+    .select("id,name,slug,description,nightly_rate,capacity,room_numbers,features,image_url,is_active,display_order,created_at")
     .order("display_order", { ascending: true })
     .order("created_at", { ascending: false });
 

@@ -35,7 +35,7 @@ docker compose -f compose.production.yml exec web node scripts/create-admin.mjs
 3. Put an HTTPS reverse proxy in front of `127.0.0.1:3000`. Production cookies require HTTPS. Add rate limiting to login and OTP endpoints.
 4. For existing databases, back up first and apply every outstanding migration in `docker/postgres/migrations/` in filename order. Initialization scripts only run on an empty database volume. Migration 005 intentionally stops if duplicate active deposit records exist; reconcile these before retrying.
 
-A room record is a single reservable unit, not a room type with stock quantity. Separate physical inventory needs separate room records in this version.
+Each room record is now a room type. Add physical room numbers such as A100, A101 and A103 in Admin → Rooms & rates. Customers select an available number for their dates.
 
 ### Run checks
 
@@ -215,3 +215,21 @@ Get-Content .\docker\postgres\migrations\002_services_image_url.sql | docker com
 Customer login is `/login`. Staff login is separately available at `/staff/login`; the customer page has no staff tab or staff login link.
 
 Legacy URLs such as `/login?next=/admin` automatically redirect to `/staff/login` and require only staff email/password, without phone or OTP.
+
+## Physical room numbers under each room type
+
+In Admin → Rooms & rates, enter **Room numbers** separated by commas or new lines, e.g. `A100, A101, A103` for Deluxe. Numbers are normalized to uppercase and must be unique across the hotel. Rooms without configured numbers cannot receive new bookings until inventory is added.
+
+Customers choose check-in/check-out dates and then select one available number. The server calculates the price and the database prevents overlapping pending/confirmed/checked-in reservations for the same number, including simultaneous requests. Different physical numbers under one type may be booked for the same dates. Checkout and next check-in may share a boundary date. The selected number appears on My bookings and the staff reservation list and is retained at check-in.
+
+Before starting this version on an existing installation, back up the database and apply migration 007:
+
+```bash
+mkdir -p backups
+docker compose exec -T db pg_dump -U hotel_app -d 23hotel > backups/before-room-inventory.sql
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U hotel_app -d 23hotel < docker/postgres/migrations/007_room_number_inventory.sql
+```
+
+Use your configured database credentials if different. New empty Docker databases apply the matching init migration automatically. Keep existing database volumes. Historic assigned numbers are preserved. Conflicting historic assignments across room types intentionally stop migration; reconcile those conflicts before retrying. Existing unnumbered active reservations hold their entire type for overlapping dates until reception assigns a valid number at check-in or cancels/rejects them.
+
+Room numbers with active reservations cannot be removed. Removing an unused number hides it from new bookings while retaining historical references. Mobile source includes the same date-based number selection; rebuild the native app to use the updated API.

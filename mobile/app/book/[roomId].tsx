@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { AppText, Field, PrimaryButton, Screen } from '@/components/ui';
 import { colors, money, readableDate } from '@/lib/theme';
@@ -12,9 +12,22 @@ export default function BookRoomScreen() {
   const [checkIn, setCheckIn] = useState(addDays(7));
   const [checkOut, setCheckOut] = useState(addDays(8));
   const [guests, setGuests] = useState('2');
+  const [roomNumber,setRoomNumber]=useState('');
+  const [roomNumbers,setRoomNumbers]=useState<string[]>([]);
+  const [availabilityBusy,setAvailabilityBusy]=useState(false);
+  const [availabilityError,setAvailabilityError]=useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const nights = useMemo(() => Math.max(0, Math.round((new Date(`${checkOut}T12:00:00`).getTime() - new Date(`${checkIn}T12:00:00`).getTime()) / 86400000)), [checkIn, checkOut]);
+
+  useEffect(()=>{
+    let cancelled=false;
+    setRoomNumber('');setRoomNumbers([]);setAvailabilityError('');
+    if(!roomId || !/^\d{4}-\d{2}-\d{2}$/.test(checkIn) || !/^\d{4}-\d{2}-\d{2}$/.test(checkOut) || checkOut<=checkIn) {setAvailabilityBusy(false);return;}
+    setAvailabilityBusy(true);
+    hotelApi.roomAvailability(roomId,checkIn,checkOut).then(numbers=>{if(!cancelled)setRoomNumbers(numbers);}).catch(error=>{if(!cancelled)setAvailabilityError(error instanceof Error?error.message:'Could not load rooms.');}).finally(()=>{if(!cancelled)setAvailabilityBusy(false);});
+    return ()=>{cancelled=true;};
+  },[roomId,checkIn,checkOut]);
 
   async function submit() {
     const { data: { user } } = await hotelApi.auth.getUser();
@@ -22,8 +35,9 @@ export default function BookRoomScreen() {
     if (!roomId || !/^\d{4}-\d{2}-\d{2}$/.test(checkIn) || !/^\d{4}-\d{2}-\d{2}$/.test(checkOut) || nights < 1 || !Number.isInteger(Number(guests)) || Number(guests) < 1 || Number(guests) > 20) {
       Alert.alert('Check your details', 'Use valid dates, check-out after check-in, and a guest count from 1 to 20.'); return;
     }
+    if(availabilityBusy || !roomNumbers.includes(roomNumber)) {Alert.alert('Choose a room number','Select an available room number before booking.');return;}
     setBusy(true);
-    const { data, error } = await hotelApi.rpc('create_booking_request', { p_room_id: roomId, p_check_in: checkIn, p_check_out: checkOut, p_guests: Number(guests), p_note: note.trim() });
+    const { data, error } = await hotelApi.rpc('create_booking_request', { p_room_id: roomId, p_room_number: roomNumber, p_check_in: checkIn, p_check_out: checkOut, p_guests: Number(guests), p_note: note.trim() });
     setBusy(false);
     if (error) { Alert.alert('Booking request not created', error.message.includes('SOLD_OUT') ? 'This room overlaps with an existing reservation. Choose another date.' : error.message); return; }
     const result = data as { booking_code?: string; total_amount?: number; status?: string } | null;
@@ -35,6 +49,8 @@ export default function BookRoomScreen() {
     <View style={styles.panel}>
       <Field label="CHECK-IN (YYYY-MM-DD)" value={checkIn} onChangeText={setCheckIn} placeholder="2026-11-10" autoCapitalize="none" />
       <Field label="CHECK-OUT (YYYY-MM-DD)" value={checkOut} onChangeText={setCheckOut} placeholder="2026-11-12" autoCapitalize="none" />
+      <AppText style={{fontWeight:'700',color:colors.forest}}>ROOM NUMBER</AppText>
+      {availabilityBusy ? <AppText>Checking availability…</AppText> : availabilityError ? <AppText>{availabilityError}</AppText> : !roomNumbers.length ? <AppText>No available room numbers for these dates.</AppText> : <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{roomNumbers.map(number=><Pressable key={number} onPress={()=>setRoomNumber(number)} style={{padding:12,borderWidth:1,borderRadius:8,borderColor:colors.goldDark,backgroundColor:roomNumber===number?colors.soft:colors.white}}><AppText>{number}{roomNumber===number?' ✓':''}</AppText></Pressable>)}</View>}
       <Field label="NUMBER OF GUESTS" value={guests} onChangeText={setGuests} keyboardType="number-pad" />
       <Field label="SPECIAL REQUEST (OPTIONAL)" value={note} onChangeText={setNote} placeholder="Arrival time, accessibility needs..." multiline style={{ minHeight: 88, textAlignVertical: 'top' }} />
     </View>

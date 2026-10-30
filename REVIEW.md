@@ -27,7 +27,7 @@
 ## Before live use
 
 - Full database-backed reservation, concurrent booking, migration and Docker startup tests were not run in this environment because no PostgreSQL/Docker runtime was available. Perform these on a staging server before taking reservations.
-- Each `rooms` record currently represents one reservable inventory unit: the schema prevents overlapping pending, confirmed or checked-in stays for that record. It does **not** track a quantity of interchangeable rooms per room type. Create separate inventory records/slugs for separate reservable rooms, or implement room-type inventory before selling multiple units of the same type.
+- Room type inventory is now implemented through `room_units` (migration 007). Each physical number belongs to one room type and booking overlap is checked per physical number.
 - Pending requests block inventory until staff confirms/rejects them. Add an operational expiry policy if requests should expire automatically.
 - Real customer OTP requires a configured SMS service. The generic SMS adapter must be matched to your provider's actual API. The fixed development OTP is disabled in production.
 - MyanMyanPay/Dinger integrations need approved merchant credentials and provider sandbox verification. No real payment or refund was made. Gateway refund reconciliation is outside this review.
@@ -47,3 +47,11 @@
 ## Signed-in header correction
 
 The old customer header always rendered a hardcoded Sign in link, even when the protected My bookings page had successfully loaded the current user's reservations. The header now reads the validated server session and displays the guest's name (or email), a My bookings link and Sign out. Desktop and mobile navigation use the same session state. Sign out clears the server cookie and reloads the login page. The session API is marked private/no-store.
+
+## Room type / physical number inventory update
+
+- Admin can create/edit multiple physical room numbers per room type. Changes to type details and number inventory commit atomically. Active booking numbers cannot be removed; soft removal preserves historical bookings.
+- Date-based availability is shared by web/mobile. All new bookings require an active number from the chosen type; the server rechecks membership and PostgreSQL exclusion constraints enforce the final overlap check.
+- Migration 007 preserves old assignments and old unnumbered active bookings. Unnumbered legacy reservations conservatively hold their entire room type for their stay dates. Resolve/assign them before selling those overlapping dates. A migration with conflicting historic room ownership fails for manual reconciliation.
+- Embedded PostgreSQL (PGlite) tests execute the actual schema/migration, availability SQL and booking service: different-number same-date bookings, duplicate-number rejection, overlapping stays, adjacent stays, cancellation/rebooking, wrong-type rejection, inventory removal protections, migration reapplication and history preservation. This does not replace a concurrency/load test on the deployed PostgreSQL 17 server.
+- Mobile source is updated; no native build/device test was performed.

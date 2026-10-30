@@ -6,7 +6,7 @@ export async function GET(request: Request) {
     const url = new URL(request.url); const slug = url.searchParams.get("slug"); const id = url.searchParams.get("id");
     const limit = Math.max(1, Math.min(50, Number(url.searchParams.get("limit") || 50) || 50));
     const result = await query<Record<string, unknown>>(
-      `SELECT id,name,slug,description,nightly_rate,capacity,features,image_url,is_active,display_order,created_at FROM rooms WHERE is_active=true${slug ? " AND slug=$1" : id ? " AND id=$1" : ""} ORDER BY display_order ASC, created_at ASC LIMIT ${limit}`,
+      `SELECT r.*, ARRAY(SELECT room_number FROM room_units u WHERE u.room_id=r.id AND u.is_active ORDER BY room_number) AS room_numbers FROM rooms r WHERE is_active=true${slug ? " AND slug=$1" : id ? " AND id=$1" : ""} ORDER BY display_order ASC, created_at ASC LIMIT ${limit}`,
       slug ? [slug] : id ? [id] : []
     );
     return NextResponse.json({ rooms: result.rows });
