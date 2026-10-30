@@ -19,8 +19,12 @@ try {
   }
   const guestPage = await (await fetch(`http://127.0.0.1:${port}/login`)).text();
   assert.ok(guestPage.includes('EMAIL ADDRESS'));
+  assert.ok(!guestPage.includes('Staff · Email'));
+  assert.ok(!guestPage.includes('type="password"'), 'Customer page must not include staff login');
+  const oldAdminLink = await (await fetch(`http://127.0.0.1:${port}/login?next=/admin`)).text();
+  assert.ok(!oldAdminLink.includes('type="password"'), 'Query parameters cannot enable staff form on customer login');
   assert.ok(!guestPage.includes('type="tel"'), 'Guest enters email before phone');
-  const staffPage = await (await fetch(`http://127.0.0.1:${port}/login?next=/admin`)).text();
+  const staffPage = await (await fetch(`http://127.0.0.1:${port}/staff/login?next=/admin`)).text();
   assert.ok(staffPage.includes('Sign in to staff portal'));
   assert.ok(staffPage.includes('type="password"'));
   assert.ok(!staffPage.includes('type="tel"'), 'Staff login must not request a phone');

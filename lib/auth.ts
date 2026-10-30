@@ -17,16 +17,16 @@ export async function requireStaff(allowed?: StaffRole[]) {
   const hotelDb = await createClient();
   const { data: { user }, error: userError } = await hotelDb.auth.getUser();
   if (userError) console.error("[auth] session lookup failed in requireStaff:", userError.message);
-  if (!user) redirect("/login?next=/admin&reason=session");
+  if (!user) redirect("/staff/login?next=/admin&reason=session");
   const { data: staff, error: staffError } = await hotelDb.from("staff_profiles")
     .select("user_id,role,display_name,is_active,created_at")
     .eq("user_id", user.id).maybeSingle();
   if (staffError) {
     console.error("[auth] staff profile lookup failed:", staffError.code, staffError.message);
-    redirect("/login?next=/admin&reason=staff_lookup");
+    redirect("/staff/login?next=/admin&reason=staff_lookup");
   }
   if (!staff || !staff.is_active || (allowed && !allowed.includes(staff.role as StaffRole))) {
-    redirect("/login?next=/admin&reason=not_staff");
+    redirect("/staff/login?next=/admin&reason=not_staff");
   }
   return { hotelDb, user: user as AppUser, staff: staff as StaffProfile };
 }

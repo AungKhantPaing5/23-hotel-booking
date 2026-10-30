@@ -6,7 +6,7 @@ Customer Website + Admin Dashboard + Android/iOS customer app. This edition does
 
 Customers enter an email first, then an **11-digit Myanmar mobile number starting with 09**, then the SMS OTP. No customer password is required in this flow. The email identifies the account; the SMS code verifies control of the phone, not ownership of the email inbox. Returning customers must use their registered email and phone combination. A previous phone-only customer may add an unused email after phone verification without losing bookings.
 
-Staff/Admin keep email + password login with no phone prompt. `/login?next=/admin` selects the Staff tab automatically. Customer OTP never signs into staff accounts, including inactive staff.
+Staff/Admin keep email + password login with no phone prompt. `/staff/login?next=/admin` opens the separate staff login page. Customer OTP never signs into staff accounts, including inactive staff.
 
 **Existing installations must apply migration 006 before restarting:**
 
@@ -92,7 +92,7 @@ npm run create-admin
 npm run dev
 ```
 
-Open `http://localhost:3000`. Sign in at `http://localhost:3000/login?next=/admin` using the email and password entered in `npm run create-admin`. You can run the admin creation command again later to reset the password for that email and ensure its `super_admin` role.
+Open `http://localhost:3000`. Sign in at `http://localhost:3000/staff/login?next=/admin` using the email and password entered in `npm run create-admin`. You can run the admin creation command again later to reset the password for that email and ensure its `super_admin` role.
 
 The SQL schema and demo room/service rows are initialized automatically when Docker creates a **new empty database volume**.
 
@@ -211,3 +211,5 @@ Get-Content .\docker\postgres\migrations\002_services_image_url.sql | docker com
 - Reception can assign a physical room number when changing a confirmed reservation to `checked_in`. The database prevents the same physical room number being assigned to two checked-in guests at once.
 - A confirmed booking requires a configurable deposit (`BOOKING_DEPOSIT_PERCENT`, default 30%). Online methods are MMQR through MyanMyanPay and hosted wallets/banks/cards through Dinger. Real payment acceptance requires approved merchant credentials, enabled payment methods, a public HTTPS URL, provider dashboard callback/return URL configuration, and sandbox/live acceptance testing. The app only marks payments paid after a signed/verified provider callback; a browser redirect alone never marks a payment as paid.
 - Existing databases must apply both migrations 003 and 004 once. Fresh databases created from `docker/postgres/init/001_schema.sql` already have the room assignment column, but running migration 004 is safe.
+
+Customer login is `/login`. Staff login is separately available at `/staff/login`; the customer page has no staff tab or staff login link.
